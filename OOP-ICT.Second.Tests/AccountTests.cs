@@ -1,4 +1,4 @@
-﻿using Xunit;
+using Xunit;
 using lab_2;
 using Moq;
 
@@ -112,5 +112,16 @@ public class PlayerAccountTests
 
         // Assert
         Assert.NotEqual(id1, id2);
+    }
+
+    [Fact]
+    public void AccountBuilder_Build_WithoutRequiredFields_ShouldThrow()
+    {
+        // Arrange
+        var builder = new AccountBuilder();
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
+        Assert.Equal("Cannot create account, some required fields are not set.", exception.Message);
     }
 }
