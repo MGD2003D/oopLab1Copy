@@ -1,43 +1,47 @@
-﻿namespace lab_2;
-public interface IAccount
-{
-    bool Withdraw(double amount);
-    void Deposit(double amount);
-    bool CanAffordBet(double amount);
-}
 
-// Реализация интерфейса банковского счета
+namespace lab_2;
+
+
+// Обновленная реализация интерфейса банковского счета с дополнительными полями
 public class PlayerAccount : IAccount
 {
-    private double balance;
+    public int Id { get; private set; }
+    public string Username { get; private set; }
+    public string Email { get; private set; }
+    public string Password { get; private set; }
+    public double Balance { get; private set; }
 
-    public PlayerAccount(double initialBalance)
+    public PlayerAccount(int id, string username, string email, string password, double initialBalance)
     {
-        balance = initialBalance;
+        Id = id;
+        Username = username;
+        Email = email;
+        Password = password;
+        Balance = initialBalance;
     }
 
     public bool Withdraw(double amount)
     {
-        if (amount <= balance)
+        if (amount <= Balance)
         {
-            balance -= amount;
+            Balance -= amount;
             return true;
         }
         return false;
     }
 
-    public void Deposit(double amount)
+    public bool Deposit(double amount)
     {
-        balance += amount;
+        if (amount > 0)
+        {
+            Balance += amount;
+            return true;
+        }
+        return false;
     }
 
     public bool CanAffordBet(double amount)
     {
-        return amount <= balance;
+        return amount <= Balance;
     }
-    public double Balance
-    {
-        get { return balance; }
-    }
-
 }
