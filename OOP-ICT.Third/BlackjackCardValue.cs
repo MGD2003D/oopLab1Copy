@@ -4,6 +4,11 @@ namespace lab_3;
 
 public static class BlackjackCardValue
 {
+    private const int ValueOfFaceCard = 10;
+    private const int ValueOfAce = 11;
+    private const int BlackjackLimit = 21;
+    private const int AceHighToLowDifference = 10;
+
     public static int CalculateCardValue(Card card)
     {
         switch (card.CardRank)
@@ -11,9 +16,9 @@ public static class BlackjackCardValue
             case Rank.Jack:
             case Rank.Queen:
             case Rank.King:
-                return 10;
+                return ValueOfFaceCard;
             case Rank.Ace:
-                return 11;
+                return ValueOfAce;
             default:
                 return (int)card.CardRank;
         }
@@ -22,13 +27,11 @@ public static class BlackjackCardValue
     public static int AdjustForAces(List<Card> hand, int currentScore)
     {
         int aceCount = hand.Count(card => card.CardRank == Rank.Ace);
-        while (currentScore > 21 && aceCount > 0)
+        while (currentScore > BlackjackLimit && aceCount > 0)
         {
-            currentScore -= 10;
+            currentScore -= AceHighToLowDifference;
             aceCount--;
         }
         return currentScore;
     }
 }
-
-

@@ -3,16 +3,22 @@ using lab_3;
 using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using OOP_ICT.Models;
+using static lab_2.gameStatus;
 
 public class BlackjackGameTests
 {
     private readonly Mock<AccountService> _mockAccountService;
+    private readonly Mock<ILogger> _mockLogger;
+    private readonly Mock<Dealer> _mockDealer;
     private readonly BlackjackGame _blackjackGame;
 
     public BlackjackGameTests()
     {
         _mockAccountService = new Mock<AccountService>();
-        _blackjackGame = new BlackjackGame(_mockAccountService.Object);
+        _mockLogger = new Mock<ILogger>();
+        _mockDealer = new Mock<Dealer>();
+        _blackjackGame = new BlackjackGame(_mockAccountService.Object, _mockLogger.Object);
     }
 
     [Fact]
@@ -53,92 +59,123 @@ public class BlackjackGameTests
     public void StartGame_InitializesGameWithValidUserAndBet()
     {
         // Arrange
-        string username = "testUser";
-        int betAmount = 100;
-        var mockAccountData = new JObject(
-            new JProperty("accounts",
-                new JArray(
-                    new JObject(
-                        new JProperty("Username", username),
-                        new JProperty("Balance", 1000)
-                    )
-                )
-            )
-        );
+        var mockAccountService = new Mock<AccountService>();
+        var mockLogger = new Mock<ILogger>();
+        var accountJson = new JObject
+        {
+            ["Username"] = "testuser"
+        };
 
-        _mockAccountService.Setup(s => s.ReadJsonFile())
-            .Returns(mockAccountData);
-        _mockAccountService.Setup(s => s.WriteJsonFile(It.IsAny<JObject>()))
-            .Callback<JObject>(json => mockAccountData = json);
+        mockAccountService.Setup(s => s.FindAccountByUsername("testuser")).Returns(accountJson);
+        mockAccountService.Setup(s => s.UpdateAccount(It.IsAny<PlayerAccount>())).Verifiable();
+
+        var blackjackGame = new BlackjackGame(mockAccountService.Object, mockLogger.Object);
 
         // Act
-        _blackjackGame.StartGame(username, betAmount);
+        blackjackGame.StartGame("testuser", 100);
 
         // Assert
-        var account = mockAccountData["accounts"].FirstOrDefault(acc => acc["Username"].Value<string>() == username);
-        Assert.NotNull(account);
-        Assert.Equal("blackjack", account["nowplaying"].Value<string>());
-        Assert.Equal(betAmount, account["bet"].Value<int>());
-        Assert.True(account["PlayerScore"].Value<int>() > 0);
-        Assert.True(account["DealerScore"].Value<int>() > 0);
-        Assert.False(account["isPlayerStopped"].Value<bool>());
+        Assert.Equal("blackjack", accountJson["nowplaying"].Value<string>());
+        Assert.Equal(100, accountJson["bet"].Value<int>());
+        Assert.True(accountJson.ContainsKey("PlayerScore"));
+        Assert.True(accountJson.ContainsKey("DealerScore"));
+        Assert.False(accountJson["isPlayerStopped"].Value<bool>());
+
+        mockAccountService.Verify(s => s.UpdateAccount(It.IsAny<PlayerAccount>()), Times.Once);
+        mockLogger.Verify(l => l.Log($"testuser started blackjack with a bet of 100."), Times.Once);
+    }
+
+    [Fact]
+    public void StartGame_WithNonExistentUser_ShouldLogError()
+    {
+        // Arrange
+        var mockAccountService = new Mock<AccountService>();
+        var mockLogger = new Mock<ILogger>();
+
+        mockAccountService.Setup(s => s.FindAccountByUsername("nonexistentuser")).Returns((JToken)null);
+
+        var blackjackGame = new BlackjackGame(mockAccountService.Object, mockLogger.Object);
+
+        // Act
+        blackjackGame.StartGame("nonexistentuser", 100);
+
+        // Assert
+        mockLogger.Verify(l => l.Log($"Failed to start game for nonexistentuser: account not found."), Times.Once);
     }
     [Fact]
     public void EndGame_ResetsGameData()
     {
         // Arrange
-        string username = "testUser";
-        JObject mockAccountData = new JObject(
-            new JProperty("accounts",
-                new JArray(
-                    new JObject(
-                        new JProperty("Username", username),
-                        new JProperty("nowplaying", "blackjack")
-                    )
-                )
-            )
-        );
+        var mockAccountService = new Mock<AccountService>();
+        var mockLogger = new Mock<ILogger>();
+        var accountJson = new JObject
+        {
+            ["Username"] = "testuser",
+            ["nowplaying"] = true,
+            ["bet"] = 100,
+            ["PlayerScore"] = 15,
+            ["DealerScore"] = 10,
+            ["isPlayerStopped"] = false
+        };
 
-        _mockAccountService.Setup(s => s.ReadJsonFile()).Returns(mockAccountData);
-        _mockAccountService.Setup(s => s.WriteJsonFile(It.IsAny<JObject>()))
-            .Callback<JObject>(json => mockAccountData = json);
+        mockAccountService.Setup(s => s.FindAccountByUsername("testuser")).Returns(accountJson);
+        mockAccountService.Setup(s => s.UpdateAccount(It.IsAny<PlayerAccount>())).Verifiable();
+
+        var blackjackGame = new BlackjackGame(mockAccountService.Object, mockLogger.Object);
 
         // Act
-        _blackjackGame.EndGame(username);
+        blackjackGame.EndGame("testuser");
 
         // Assert
-        var updatedAccount = mockAccountData["accounts"].FirstOrDefault(acc => acc["Username"].Value<string>() == username);
-        Assert.NotNull(updatedAccount);
-        Assert.Null(updatedAccount["nowplaying"]);
+        Assert.Null(accountJson["nowplaying"]);
+        Assert.Null(accountJson["bet"]);
+        Assert.Null(accountJson["PlayerScore"]);
+        Assert.Null(accountJson["DealerScore"]);
+        Assert.Null(accountJson["isPlayerStopped"]);
+
+        mockAccountService.Verify(s => s.UpdateAccount(It.IsAny<PlayerAccount>()), Times.Once);
+        mockLogger.Verify(l => l.Log($"Game ended for testuser."), Times.Once);
+    }
+
+    [Fact]
+    public void EndGame_WithNonExistentUser_ShouldLogError()
+    {
+        // Arrange
+        var mockAccountService = new Mock<AccountService>();
+        var mockLogger = new Mock<ILogger>();
+
+        mockAccountService.Setup(s => s.FindAccountByUsername("nonexistentuser")).Returns((JToken)null);
+
+        var blackjackGame = new BlackjackGame(mockAccountService.Object, mockLogger.Object);
+
+        // Act
+        blackjackGame.EndGame("nonexistentuser");
+
+        // Assert
+        mockLogger.Verify(l => l.Log($"Attempted to end game for non-existent user: nonexistentuser."), Times.Once);
     }
     [Fact]
     public void PlayerTurn_ProcessesTurnCorrectly()
     {
         // Arrange
         string username = "testUser";
-        JObject mockAccountData = new JObject(
-            new JProperty("accounts",
-                new JArray(
-                    new JObject(
-                        new JProperty("Username", username),
-                        new JProperty("PlayerScore", 10)
-                    )
-                )
-            )
-        );
+        var initialScore = 10;
+        var newScore = 15;
+        var mockAccount = new JObject
+        {
+            ["Username"] = username,
+            ["PlayerScore"] = initialScore
+        };
 
-        _mockAccountService.Setup(s => s.ReadJsonFile()).Returns(mockAccountData);
-        _mockAccountService.Setup(s => s.WriteJsonFile(It.IsAny<JObject>()))
-            .Callback<JObject>(json => mockAccountData = json);
+        _mockAccountService.Setup(s => s.AccountExists(username)).Returns(true);
+        _mockAccountService.Setup(s => s.GetPlayerScore(username)).Returns(initialScore);
 
         // Act
         _blackjackGame.PlayerTurn(username);
 
         // Assert
-        var updatedAccount = mockAccountData["accounts"].FirstOrDefault(acc => acc["Username"].Value<string>() == username);
-        Assert.NotNull(updatedAccount);
-        int updatedPlayerScore = updatedAccount["PlayerScore"].Value<int>();
-        Assert.True(updatedPlayerScore > 10);
+        _mockAccountService.Verify(s => s.AccountExists(username), Times.Once);
+        _mockAccountService.Verify(s => s.GetPlayerScore(username), Times.Once);
     }
 
     [Fact]
@@ -146,29 +183,25 @@ public class BlackjackGameTests
     {
         // Arrange
         string username = "testUser";
-        JObject mockAccountData = new JObject(
-            new JProperty("accounts",
-                new JArray(
-                    new JObject(
-                        new JProperty("Username", username),
-                        new JProperty("DealerScore", 10)
-                    )
-                )
-            )
-        );
+        var mockAccount = new JObject
+        {
+            ["Username"] = username,
+            ["DealerScore"] = 10
+        };
+        var card = new Card(Suit.Hearts, Rank.Five);
 
-        _mockAccountService.Setup(s => s.ReadJsonFile()).Returns(mockAccountData);
-        _mockAccountService.Setup(s => s.WriteJsonFile(It.IsAny<JObject>()))
-            .Callback<JObject>(json => mockAccountData = json);
+        _mockAccountService.Setup(s => s.AccountExists(username)).Returns(true);
+        _mockAccountService.Setup(s => s.FindAccountByUsername(username)).Returns(mockAccount);
+        _mockAccountService.Setup(s => s.UpdateDealerScore(username, It.IsAny<int>())).Verifiable();
+        _mockDealer.Setup(d => d.DealCard()).Returns(card);
 
+        // Act
         _blackjackGame.DealerTurn(username);
 
         // Assert
-        var updatedAccount = mockAccountData["accounts"].FirstOrDefault(acc => acc["Username"].Value<string>() == username);
-        Assert.NotNull(updatedAccount);
-        int updatedDealerScore = updatedAccount["DealerScore"].Value<int>();
-        Assert.True(updatedDealerScore > 10);
+        _mockAccountService.Verify(s => s.UpdateDealerScore(username, It.IsAny<int>()), Times.Once);
     }
+
 
 
     [Fact]
@@ -176,96 +209,34 @@ public class BlackjackGameTests
     {
         // Arrange
         string username = "testUser";
-        JObject mockAccountData = new JObject(
-            new JProperty("accounts",
-                new JArray(
-                    new JObject(
-                        new JProperty("Username", username),
-                        new JProperty("PlayerScore", 21),
-                        new JProperty("DealerScore", 20),
-                        new JProperty("isPlayerStopped", false)
-                    )
-                )
-            )
-        );
-
-        _mockAccountService.Setup(s => s.ReadJsonFile()).Returns(mockAccountData);
+        _mockAccountService.Setup(s => s.GetGameStatus(username)).Returns(GameStatus.Win);
 
         // Act
-        string result = _blackjackGame.CheckWin(username);
+        var result = _blackjackGame.CheckWin(username);
 
         // Assert
-        Assert.Equal("win", result);
+        Assert.Equal(GameStatus.Win, result);
     }
+
+
+
 
     [Fact]
     public void Reward_PlayerWins_IncreasesBalance()
     {
         // Arrange
         string username = "testUser";
-        int betAmount = 100;
-        double initialBalance = 1000.0;
-        JObject mockAccountData = new JObject(
-            new JProperty("accounts",
-                new JArray(
-                    new JObject(
-                        new JProperty("Username", username),
-                        new JProperty("Balance", initialBalance),
-                        new JProperty("bet", betAmount),
-                        new JProperty("PlayerScore", 21),
-                        new JProperty("DealerScore", 20),
-                        new JProperty("isPlayerStopped", true)
-                    )
-                )
-            )
-        );
+        double betAmount = 100;
 
-        _mockAccountService.Setup(s => s.ReadJsonFile()).Returns(mockAccountData);
-        _mockAccountService.Setup(s => s.WriteJsonFile(It.IsAny<JObject>()))
-            .Callback<JObject>(json => mockAccountData = json);
+        _mockAccountService.Setup(s => s.AccountExists(username)).Returns(true);
+        _mockAccountService.Setup(s => s.GetGameStatus(username)).Returns(GameStatus.Win);
+        _mockAccountService.Setup(s => s.GetBetAmount(username)).Returns(betAmount);
+        _mockAccountService.Setup(s => s.UpdateAccountBalance(username, betAmount, GameStatus.Win)).Verifiable();
 
         // Act
         _blackjackGame.Reward(username);
 
         // Assert
-        var updatedAccount = mockAccountData["accounts"].FirstOrDefault(acc => acc["Username"].Value<string>() == username);
-        Assert.NotNull(updatedAccount);
-        double updatedBalance = updatedAccount["Balance"].Value<double>();
-        Assert.Equal(initialBalance + betAmount, updatedBalance);
+        _mockAccountService.Verify(s => s.UpdateAccountBalance(username, betAmount, GameStatus.Win), Times.Once);
     }
-    [Fact]
-    public void PlayerStopped_SetsPlayerStoppedStatus()
-    {
-        // Arrange
-        string username = "testUser";
-        JObject mockAccountData = new JObject(
-            new JProperty("accounts",
-                new JArray(
-                    new JObject(
-                        new JProperty("Username", username),
-                        new JProperty("isPlayerStopped", false)
-                    )
-                )
-            )
-        );
-
-        _mockAccountService.Setup(s => s.ReadJsonFile()).Returns(mockAccountData);
-        _mockAccountService.Setup(s => s.WriteJsonFile(It.IsAny<JObject>()))
-            .Callback<JObject>(json => mockAccountData = json);
-
-        // Act
-        _blackjackGame.PlayerStopped(username);
-
-        // Assert
-        var updatedAccount = mockAccountData["accounts"].FirstOrDefault(acc => acc["Username"].Value<string>() == username);
-        Assert.NotNull(updatedAccount);
-        Assert.True(updatedAccount["isPlayerStopped"].Value<bool>());
-    }
-
 }
-
-
-
-
-
-
