@@ -1,6 +1,5 @@
 ﻿using lab_2;
 using OOP_ICT.Models;
-using static lab_2.gameStatus;
 
 namespace lab_3;
 

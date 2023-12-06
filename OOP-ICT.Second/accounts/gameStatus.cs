@@ -1,13 +1,9 @@
 ﻿namespace lab_2;
 
-public class gameStatus
+public enum GameStatus
 {
-    public enum GameStatus
-    {
-        Win,
-        Lose,
-        Draw,
-        InProgress
-    }
-
+    Win,
+    Lose,
+    Draw,
+    InProgress
 }

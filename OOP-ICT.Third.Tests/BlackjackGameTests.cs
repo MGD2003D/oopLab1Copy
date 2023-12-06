@@ -4,7 +4,6 @@ using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using OOP_ICT.Models;
-using static lab_2.gameStatus;
 
 public class BlackjackGameTests
 {
@@ -15,8 +14,9 @@ public class BlackjackGameTests
 
     public BlackjackGameTests()
     {
-        _mockAccountService = new Mock<AccountService>();
+        var mockAccountDAO = new Mock<IAccountDAO>();
         _mockLogger = new Mock<ILogger>();
+        _mockAccountService = new Mock<AccountService>(mockAccountDAO.Object, _mockLogger.Object);
         _mockDealer = new Mock<Dealer>();
         _blackjackGame = new BlackjackGame(_mockAccountService.Object, _mockLogger.Object);
     }
@@ -28,6 +28,8 @@ public class BlackjackGameTests
         string username = "testUser";
         string password = "testPassword";
         var mockAccount = new PlayerAccount(1, username, "testuser@example.com", password, 1000.0);
+        var mockAccountDAO = new Mock<IAccountDAO>();
+        var mockLogger = new Mock<ILogger>();
 
         _mockAccountService.Setup(s => s.GetAccountByCredentials(username, password))
             .Returns(mockAccount);
@@ -45,7 +47,8 @@ public class BlackjackGameTests
         // Arrange
         string username = "nonExistingUser";
         string password = "wrongPassword";
-
+        var mockAccountDAO = new Mock<IAccountDAO>();
+        var mockLogger = new Mock<ILogger>();
         _mockAccountService.Setup(s => s.GetAccountByCredentials(It.IsAny<string>(), It.IsAny<string>()))
             .Returns((PlayerAccount)null);
 
@@ -55,12 +58,14 @@ public class BlackjackGameTests
         // Assert
         Assert.False(result);
     }
+
     [Fact]
     public void StartGame_InitializesGameWithValidUserAndBet()
     {
         // Arrange
-        var mockAccountService = new Mock<AccountService>();
+        var mockAccountDAO = new Mock<IAccountDAO>();
         var mockLogger = new Mock<ILogger>();
+        var mockAccountService = new Mock<AccountService>(mockAccountDAO.Object, mockLogger.Object);
         var accountJson = new JObject
         {
             ["Username"] = "testuser"
@@ -89,8 +94,9 @@ public class BlackjackGameTests
     public void StartGame_WithNonExistentUser_ShouldLogError()
     {
         // Arrange
-        var mockAccountService = new Mock<AccountService>();
+        var mockAccountDAO = new Mock<IAccountDAO>();
         var mockLogger = new Mock<ILogger>();
+        var mockAccountService = new Mock<AccountService>(mockAccountDAO.Object, mockLogger.Object);
 
         mockAccountService.Setup(s => s.FindAccountByUsername("nonexistentuser")).Returns((JToken)null);
 
@@ -102,12 +108,14 @@ public class BlackjackGameTests
         // Assert
         mockLogger.Verify(l => l.Log($"Failed to start game for nonexistentuser: account not found."), Times.Once);
     }
+
     [Fact]
     public void EndGame_ResetsGameData()
     {
         // Arrange
-        var mockAccountService = new Mock<AccountService>();
+        var mockAccountDAO = new Mock<IAccountDAO>();
         var mockLogger = new Mock<ILogger>();
+        var mockAccountService = new Mock<AccountService>(mockAccountDAO.Object, mockLogger.Object);
         var accountJson = new JObject
         {
             ["Username"] = "testuser",
@@ -141,8 +149,9 @@ public class BlackjackGameTests
     public void EndGame_WithNonExistentUser_ShouldLogError()
     {
         // Arrange
-        var mockAccountService = new Mock<AccountService>();
+        var mockAccountDAO = new Mock<IAccountDAO>();
         var mockLogger = new Mock<ILogger>();
+        var mockAccountService = new Mock<AccountService>(mockAccountDAO.Object, mockLogger.Object);
 
         mockAccountService.Setup(s => s.FindAccountByUsername("nonexistentuser")).Returns((JToken)null);
 
@@ -154,6 +163,7 @@ public class BlackjackGameTests
         // Assert
         mockLogger.Verify(l => l.Log($"Attempted to end game for non-existent user: nonexistentuser."), Times.Once);
     }
+
     [Fact]
     public void PlayerTurn_ProcessesTurnCorrectly()
     {
@@ -166,6 +176,8 @@ public class BlackjackGameTests
             ["Username"] = username,
             ["PlayerScore"] = initialScore
         };
+        var mockAccountDAO = new Mock<IAccountDAO>();
+        var mockLogger = new Mock<ILogger>();
 
         _mockAccountService.Setup(s => s.AccountExists(username)).Returns(true);
         _mockAccountService.Setup(s => s.GetPlayerScore(username)).Returns(initialScore);
@@ -202,14 +214,17 @@ public class BlackjackGameTests
         _mockAccountService.Verify(s => s.UpdateDealerScore(username, It.IsAny<int>()), Times.Once);
     }
 
-
-
     [Fact]
     public void CheckWin_PlayerWins_ReturnsWin()
     {
         // Arrange
         string username = "testUser";
-        _mockAccountService.Setup(s => s.GetGameStatus(username)).Returns(GameStatus.Win);
+
+        var mockAccountDAO = new Mock<IAccountDAO>();
+        var mockLogger = new Mock<ILogger>();
+        var mockAccountService = new Mock<AccountService>(mockAccountDAO.Object, mockLogger.Object);
+
+        mockAccountService.Setup(s => s.GetGameStatus(username)).Returns(GameStatus.Win);
 
         // Act
         var result = _blackjackGame.CheckWin(username);
@@ -218,15 +233,15 @@ public class BlackjackGameTests
         Assert.Equal(GameStatus.Win, result);
     }
 
-
-
-
     [Fact]
     public void Reward_PlayerWins_IncreasesBalance()
     {
         // Arrange
         string username = "testUser";
         double betAmount = 100;
+
+        var mockAccountDAO = new Mock<IAccountDAO>();
+        var mockLogger = new Mock<ILogger>();
 
         _mockAccountService.Setup(s => s.AccountExists(username)).Returns(true);
         _mockAccountService.Setup(s => s.GetGameStatus(username)).Returns(GameStatus.Win);
