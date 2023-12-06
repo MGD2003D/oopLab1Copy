@@ -9,7 +9,7 @@
             deck = new CardDeck();
         }
 
-        public void PerfectShuffle()
+        public virtual void PerfectShuffle()
         {
             List<Card> tempDeck = new List<Card>();
             int half = deck.Cards.Count / 2;
@@ -23,7 +23,7 @@
             deck.SetCards(tempDeck);
         }
 
-        public Card DealCard()
+        public virtual Card DealCard()
         {
             return deck.DrawCard();
         }

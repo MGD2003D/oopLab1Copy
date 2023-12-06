@@ -1,24 +1,32 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOP-ICT.First", "OOP-ICT.First\OOP-ICT.First.csproj", "{0BEB7C20-678A-4E41-9A94-FA59F16291E1}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34302.85
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OOP-ICT.First", "OOP-ICT.First\OOP-ICT.First.csproj", "{0BEB7C20-678A-4E41-9A94-FA59F16291E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOP-ICT.FIrst.Tests", "OOP-ICT.FIrst.Tests\OOP-ICT.FIrst.Tests.csproj", "{4C63C867-63FA-4251-B2CC-72943EF9BAD3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OOP-ICT.FIrst.Tests", "OOP-ICT.FIrst.Tests\OOP-ICT.FIrst.Tests.csproj", "{4C63C867-63FA-4251-B2CC-72943EF9BAD3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOP-ICT.Second", "OOP-ICT.Second\OOP-ICT.Second.csproj", "{807EFA9F-BB27-4889-AE7E-E1C6A40F0C3B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OOP-ICT.Second", "OOP-ICT.Second\OOP-ICT.Second.csproj", "{807EFA9F-BB27-4889-AE7E-E1C6A40F0C3B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOP-ICT.Second.Tests", "OOP-ICT.Second.Tests\OOP-ICT.Second.Tests.csproj", "{E8BBB541-F5DD-4C78-BEB0-A2D98F0847CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OOP-ICT.Second.Tests", "OOP-ICT.Second.Tests\OOP-ICT.Second.Tests.csproj", "{E8BBB541-F5DD-4C78-BEB0-A2D98F0847CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOP-ICT.Third", "OOP-ICT.Third\OOP-ICT.Third.csproj", "{87095BDB-F38F-4041-9E2E-D579677C4E68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OOP-ICT.Third", "OOP-ICT.Third\OOP-ICT.Third.csproj", "{87095BDB-F38F-4041-9E2E-D579677C4E68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOP-ICT.Third.Tests", "OOP-ICT.Third.Tests\OOP-ICT.Third.Tests.csproj", "{446BFAAD-EC0E-4CE7-975B-58D803FE0480}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OOP-ICT.Third.Tests", "OOP-ICT.Third.Tests\OOP-ICT.Third.Tests.csproj", "{446BFAAD-EC0E-4CE7-975B-58D803FE0480}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOP-ICT.Fourth", "OOP-ICT.Fourth\OOP-ICT.Fourth.csproj", "{2A894B6B-9011-4980-A90A-8EE3153F0C3D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OOP-ICT.Fourth", "OOP-ICT.Fourth\OOP-ICT.Fourth.csproj", "{2A894B6B-9011-4980-A90A-8EE3153F0C3D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOP-ICT.Fourth.Tests", "OOP-ICT.Fourth.Tests\OOP-ICT.Fourth.Tests.csproj", "{2CDD851F-75C1-4EA5-AF96-9B017148FB8B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OOP-ICT.Fourth.Tests", "OOP-ICT.Fourth.Tests\OOP-ICT.Fourth.Tests.csproj", "{2CDD851F-75C1-4EA5-AF96-9B017148FB8B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOP-ICT.Fifth", "OOP-ICT.Fifth\OOP-ICT.Fifth.csproj", "{9BFAD517-C6B2-4311-831D-EF83FD0A3A5C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OOP-ICT.Fifth", "OOP-ICT.Fifth\OOP-ICT.Fifth.csproj", "{9BFAD517-C6B2-4311-831D-EF83FD0A3A5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OOP-ICT.Fifth.Tests", "OOP-ICT.Fifth.Tests\OOP-ICT.Fifth.Tests.csproj", "{CFABC305-B1CA-4219-99BC-353DA672C58D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OOP-ICT.Fifth.Tests", "OOP-ICT.Fifth.Tests\OOP-ICT.Fifth.Tests.csproj", "{CFABC305-B1CA-4219-99BC-353DA672C58D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "resources", "resources", "{937122BA-CFEC-4F88-B179-DCBFEF962888}"
+	ProjectSection(SolutionItems) = preProject
+		AccountList.json = AccountList.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,5 +74,11 @@ Global
 		{CFABC305-B1CA-4219-99BC-353DA672C58D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CFABC305-B1CA-4219-99BC-353DA672C58D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CFABC305-B1CA-4219-99BC-353DA672C58D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C6CD2F63-5995-4E51-9F62-B8FE730A7798}
 	EndGlobalSection
 EndGlobal

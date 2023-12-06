@@ -57,7 +57,7 @@ public class AccountBuilder
         }
     }
 
-    private void Reset()
+    public void Reset()
     {
         username = null;
         email = null;
